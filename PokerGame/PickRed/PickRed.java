@@ -1,28 +1,64 @@
 import java.util.*;
 
-class Card{
-	protected String suit;
-	protected String number;
+public class Pickred{
+	static Pokers pokercards[]=new Pokers[52];
+	static Players players[]=new Players[4];
+	static Table table;
 
-	public Card(){}
+	public static void main(String args[]){
+		initializePokers();
+		initializePlayers(4);
+		table=new Table(pokercards);
 
-	public void show(){
-		System.out.println(suit+"\t"+number);
+		for(int i=0; i<6; i++){
+			showTable(i);
+			inputPokers();
+
+			System.out.println("\n");
+		}
+	}
+
+	public static void initializePokers(){
+		int order[]=Cards.shuffleCards();
+
+		for(int i=0; i<52; i++){
+			pokercards[i]=new Pokers(order[i]);
+		}
+	}
+
+	public static void initializePlayers(int numberOfPeople){
+		for(int i=0; i<numberOfPeople; i++){
+			players[i]=new Players(i,pokercards);
+		}
+	}
+
+	public static void showTable(int i){
+		table.showRoundAndScore(i);
+		for(int j=0; j<4; j++){
+			players[j].showPlayerAndScore();
+		}
+		System.out.println("\n");
+		table.showPokersOnTable();
+		System.out.println();
+		players[0].showPlayerAndPokers();
+	}
+
+	public static void inputPokers(){
+		players[0].inputAndcheck();
 	}
 }
 
-class Poker extends Card{
-	public Poker(String su, String num){
-		suit=su;
-		number=num;
-	}
+class Cards{
+	protected int serialNumber;
+
+	Cards(){}
 
 	public static int[] shuffleCards(){
-		int order[]=new int[52];
-		for(int i=0; i<52; i++) order[i]=i;
-
 		Random rand=new Random(System.currentTimeMillis());
+		int order[]=new int[52];
 		int n, temp;
+
+		for(int i=0; i<52; i++) order[i]=i;
 		for(int i=0; i<52; i++){
 			n=rand.nextInt(52);
 			temp=order[i];
@@ -31,6 +67,24 @@ class Poker extends Card{
 		}
 		
 		return order;
+	}
+
+	public void showPoker(){
+		System.out.println(serialNumber);
+	}
+	
+}
+
+class Pokers extends Cards{
+	public String suit;
+	public String number;
+
+	Pokers(){}
+
+	Pokers(int ser){
+		serialNumber=ser;
+		suit=setSuit(ser);
+		number=setNumber(ser);
 	}
 
 	public static String setSuit(int ord){
@@ -59,102 +113,106 @@ class Poker extends Card{
 			return Integer.toString(ord%13);
 		}
 	}
-}
 
-class PokerOnTable extends Card{
-
-	public static void printThePojerOnTable(int quantity){
-		for(int i=0; i<quantity; i++){
-			// System.out.println(pokercard[i].suit+"\t"+pokercard[i].number)
-		}
+	public void showPoker(){
+		System.out.println(suit+"\t"+number);
 	}
 }
 
-class Player{
+class SortTheCards extends Pokers{
+	SortTheCards(){}
+}
+
+class Table{
+	int pokercardsOnTable;
+	Pokers pokercards[]=new Pokers[14];
+
+	Table(Pokers pokers[]){
+		pokercardsOnTable=4;
+
+		int n=0;
+		for(int i=24; i<28; i++){
+			pokercards[n]=pokers[i];
+			n++;
+		}
+	}
+
+	public void showRoundAndScore(int round){
+		System.out.println("Round : "+(round+1));
+		System.out.print("Score : ");
+	}
+
+	public void showPokersOnTable(){
+		System.out.println("The pokers on table :");
+		for(int i=0; i<pokercardsOnTable; i++){
+			System.out.println(pokercards[i].suit+"\t"+pokercards[i].number);
+		}
+	}
+
+	public void canThePokersBeMated(){
+
+	}
+
+}
+
+class Players{
 	int order;
 	String name;
 	int score;
-	Card pokercard[]=new Card[6];
+	protected Pokers pokercards[]=new Pokers[6];
 
-	Player(int o, Card po[]){
-		order=o;
-		name="Player "+Integer.toString(o);
+	Players(){}
+
+	Players(int ord, Pokers pokers[]){
+		order=ord;									// 0,1,2,3...
+		name="Player "+Integer.toString(ord+1);
 		score=0;
+
 		int n=0;
 		for(int i=0; i<24; i++){
-			if(i%4==o){
-				pokercard[n]=po[i];
+			if(i%4==ord){
+				pokercards[n]=pokers[i];
 				n++;
 			}
 		}
 	}
 
-	public void show(){
-		System.out.println("Player = "+name);
-		System.out.println("Order = "+order+1);
-		System.out.println("Score = "+score);
-		System.out.println("PokerCard = ");
+	public void showPlayerAndPokers(){
+		System.out.println("The pokers of "+name+" :");
 		for(int i=0; i<6; i++){
-			System.out.println(pokercard[i].suit+"\t"+pokercard[i].number);
+			System.out.println(pokercards[i].suit+"\t"+pokercards[i].number);
 		}
 	}
 
-	public void showScore(){
-		System.out.println(name+":"+score);
-	}
-}
-
-public class PickRed{
-	static Poker[] poker=new Poker[52];
-	static PokerOnTable[] pokerOnTable=new PokerOnTable[14];
-	static Player[] player=new Player[4];
-
-	public static void main(String args[]){
-		initializeCards();
-		initializeForFourPlayers();
-
-		int round=1;
-
-		for(int i=0; i<6; i++){
-
-		}
+	public void showPlayerAndScore(){
+		System.out.print(name+" = "+score+"\t");
 	}
 
-	public static void initializeCards(){
-		int order[]=new int[52];
-		order=Poker.shuffleCards();
-
-		for(int i=0; i<52; i++){
-			poker[i]=new Poker(Poker.setSuit(order[i]),Poker.setNumber(order[i]));
-		}
-
-		for(int i=0; i<52; i++){
-			poker[i].show();
-		}
-	}
-
-	public static void initializeCardsOnTable(){
-		
-	}
-
-	public static void initializeForFourPlayers(){
-		//order = i (0,1,2,3)
-		for(int i=0; i<4; i++){
-			player[i]=new Player(i,poker);
-		}
-	}
-
-	public static void inputTheCardAndCheck(){
+	public Pokers inputAndcheck(){
+		Pokers input=new Pokers();
 		Scanner scn=new Scanner(System.in);
-		System.out.println("Please input the suit:");
-		String inputSuit=scn.next();
-
-		System.out.println("Please input the number:");
-		String inputNumber=scn.next();
-
+		boolean check=false;
+		while(check==false){
+			System.out.print("Please input the suit :");
+			String su=scn.next();
+			System.out.print("Please input the number :");
+			String num=scn.next();
+			check=checkInput(su,num);
+			if(check==true){
+				input.suit=su;
+				input.number=num;
+			}
+		}
+		return input;
 	}
 
-	public static void game(){
-
+	public boolean checkInput(String suit, String number){
+		for(int i=0; i<6; i++){
+			if(suit.equals(pokercards[i].suit) && number.equals(pokercards[i].number)){
+				return true;
+			}
+		}
+		System.out.println("You don't have this card.");
+		return false;
 	}
 }

@@ -2,8 +2,10 @@ import java.util.*;
 
 public class Pickred{
 	static Pokers pokercards[]=new Pokers[52];
+	static SortPokers sortPokers=new SortPokers();
 	static Players players[]=new Players[4];
 	static Table table;
+
 
 	public static void main(String args[]){
 		initializePokers();
@@ -32,19 +34,26 @@ public class Pickred{
 		}
 	}
 
-	public static void showTable(int i){
-		table.showRoundAndScore(i);
+	public static void showTable(int round){
+		sort(round);
+		table.showRoundAndScore(round);
 		for(int j=0; j<4; j++){
 			players[j].showPlayerAndScore();
 		}
 		System.out.println("\n");
 		table.showPokersOnTable();
-		System.out.println();
 		players[0].showPlayerAndPokers();
 	}
 
 	public static void inputPokers(){
 		players[0].inputAndcheck();
+	}
+
+	public static void sort(int round){
+		sortPokers=new SortPokers(table);
+		sortPokers.sorting(sortPokers);
+		sortPokers=new SortPokers(round,players[0]);
+		sortPokers.sorting(sortPokers);
 	}
 }
 
@@ -117,10 +126,47 @@ class Pokers extends Cards{
 	public void showPoker(){
 		System.out.println(suit+"\t"+number);
 	}
+
 }
 
-class SortTheCards extends Pokers{
-	SortTheCards(){}
+class SortPokers{
+	int numberOfPokers;
+	Pokers pokerToSort[]=new Pokers[14];
+
+	SortPokers(){}
+
+	SortPokers(Table table){
+		numberOfPokers=table.pokercardsOnTable;
+		pokerToSort=table.pokercards;
+	}
+
+	SortPokers(int round,Players player){
+		numberOfPokers=(6-round);
+		pokerToSort=player.pokercards;
+	}
+
+	public void sorting(SortPokers sorting){
+		int tem;
+		String temp;
+
+		for(int i=0; i<sorting.numberOfPokers; i++){
+			for(int j=1; j<sorting.numberOfPokers-i; j++){
+				if(sorting.pokerToSort[j-1].serialNumber>sorting.pokerToSort[j].serialNumber){
+					tem=sorting.pokerToSort[j-1].serialNumber;
+					sorting.pokerToSort[j-1].serialNumber=sorting.pokerToSort[j].serialNumber;
+					sorting.pokerToSort[j].serialNumber=tem;
+
+					temp=sorting.pokerToSort[j-1].suit;
+					sorting.pokerToSort[j-1].suit=sorting.pokerToSort[j].suit;
+					sorting.pokerToSort[j].suit=temp;
+
+					temp=sorting.pokerToSort[j-1].number;
+					sorting.pokerToSort[j-1].number=sorting.pokerToSort[j].number;
+					sorting.pokerToSort[j].number=temp;
+				}
+			}
+		}
+	}
 }
 
 class Table{
@@ -147,10 +193,19 @@ class Table{
 		for(int i=0; i<pokercardsOnTable; i++){
 			System.out.println(pokercards[i].suit+"\t"+pokercards[i].number);
 		}
+		System.out.println();
 	}
 
-	public void canThePokersBeMated(){
+	public Pokers canThePokersBeMated(Pokers input){
 
+
+		return input;
+	}
+
+	public Pokers[] canThePokersBeMated(Pokers input[]){
+		
+
+		return input;
 	}
 
 }
@@ -159,7 +214,7 @@ class Players{
 	int order;
 	String name;
 	int score;
-	protected Pokers pokercards[]=new Pokers[6];
+	public Pokers pokercards[]=new Pokers[6];
 
 	Players(){}
 

@@ -7,10 +7,24 @@ public class OldMaid{
 	public static void main(String args[]){
 		initializePlayers();
 		shuffleAndDeal();
-		for(int round=0; round<3; round++){
+		for(int round=0; round<100; round++){
 			for(int i=0; i<4; i++) eliminateAndCount(i);
-			showAndinput(0,1);
-			for(int i=1; i<4; i++) drawAndArrange(i);
+			if(players[0].numberOfPokers==0){
+				System.out.println("You win the game!!!");
+				break;
+			}
+			if(players[1].numberOfPokers==0 && players[2].numberOfPokers==0 && players[3].numberOfPokers==0){
+				System.out.println("You lose the game.");
+				break;
+			}
+			for(int i=0; i<4; i++) show(i);
+			for(int i=0; i<4; i++){
+				if(players[i].numberOfPokers==0) continue;
+				int j=1;
+				while(players[(i+j)%4].numberOfPokers==0) j++;
+				if(i==0) showAndinput(i,(i+j)%4);
+				else draw(i,(i+j)%4);
+			}
 		}
 
 	}
@@ -30,23 +44,44 @@ public class OldMaid{
 			players[i].count();
 	}
 
-	public static void drawAndArrange(int i){
-
+	public static void draw(int i, int j){
+		Random rand=new Random(System.currentTimeMillis());
+		int num=players[j].numberOfPokers;
+		int draw=rand.nextInt(num);
+		arrange(i,j,draw);
 	}
 
 	public static void showAndinput(int i, int j){
 		Scanner scn=new Scanner(System.in);
-		int input;
+		int input=99;
 		boolean check=false;
-
+		/*
 		System.out.println("Player 1 ("+players[i].numberOfPokers+" pokers)");
 		players[i].showPoker();
+		*/
 		System.out.println("Next player have "+players[j].numberOfPokers+" pokers.");
 		while(check==false){
 			System.out.println("Please input a number between 1 - "+players[j].numberOfPokers);
 			input=scn.nextInt();
 			if(input>=1 && input<=players[j].numberOfPokers) check=true;
 		}
+		arrange(i,j,(input-1));
+	}
+
+	public static void arrange(int i, int j, int draw){
+		players[i].numberOfPokers+=1;
+		players[i].handPokers[players[i].numberOfPokers-1]=players[j].handPokers[draw];
+		players[j].handPokers[draw]=new Poker();
+		players[i].eliminate();
+		players[i].sort();
+		players[i].count();
+		players[j].sort();
+		players[j].count();
+	}
+
+	public static void show(int i){
+		System.out.println("Player "+i+" ("+players[i].numberOfPokers+" pokers)");
+		players[i].showPoker();
 	}
 }
 
@@ -95,14 +130,6 @@ class Deck{
 			}
 		}
 	}
-
-	///////////////////////////////
-	public void showPoker(){
-		for(int i=0 ;i<54; i++){
-			System.out.println(deckPokers[i].serialNumber);
-		}
-	}
-	///////////////////////////////
 }
 
 class Player{
@@ -116,8 +143,11 @@ class Player{
 
 	public void showPoker(){
 		for(int i=0 ;i<14; i++){
-			if(handPokers[i].serialNumber==99) return;
-			System.out.println(handPokers[i].serialNumber);
+			if(handPokers[i].serialNumber==99){
+				System.out.println();
+				return;
+			}
+			System.out.print(handPokers[i].serialNumber+"\t");
 		}
 	}
 
@@ -152,7 +182,7 @@ class Player{
 	}
 
 	public void count(){
-		for(int i=0; i<numberOfPokers; i++){
+		for(int i=0; i<numberOfPokers+1; i++){
 			if(handPokers[i].serialNumber==99){
 				numberOfPokers=i;
 				//System.out.println("number : "+numberOfPokers);

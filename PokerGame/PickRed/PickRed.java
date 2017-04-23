@@ -1,273 +1,410 @@
 import java.util.*;
 
-public class Pickred{
-	static Pokers pokercards[]=new Pokers[52];
-	static SortPokers sortPokers=new SortPokers();
-	static Players players[]=new Players[4];
-	static Table table;
-
-
-	public static void main(String args[]){
-		initializePokers();
-		initializePlayers(4);
-		table=new Table(pokercards);
-
-		for(int i=0; i<6; i++){
-			showTable(i);
-			inputPokers();
-
-			System.out.println("\n");
-		}
-	}
-
-	public static void initializePokers(){
-		int order[]=Cards.shuffleCards();
-
-		for(int i=0; i<52; i++){
-			pokercards[i]=new Pokers(order[i]);
-		}
-	}
-
-	public static void initializePlayers(int numberOfPeople){
-		for(int i=0; i<numberOfPeople; i++){
-			players[i]=new Players(i,pokercards);
-		}
-	}
-
-	public static void showTable(int round){
-		sort(round);
-		table.showRoundAndScore(round);
-		for(int j=0; j<4; j++){
-			players[j].showPlayerAndScore();
-		}
-		System.out.println("\n");
-		table.showPokersOnTable();
-		players[0].showPlayerAndPokers();
-	}
-
-	public static void inputPokers(){
-		players[0].inputAndcheck();
-	}
-
-	public static void sort(int round){
-		sortPokers=new SortPokers(table);
-		sortPokers.sorting(sortPokers);
-		sortPokers=new SortPokers(round,players[0]);
-		sortPokers.sorting(sortPokers);
-	}
-}
-
-class Cards{
-	protected int serialNumber;
-
-	Cards(){}
-
-	public static int[] shuffleCards(){
-		Random rand=new Random(System.currentTimeMillis());
-		int order[]=new int[52];
-		int n, temp;
-
-		for(int i=0; i<52; i++) order[i]=i;
-		for(int i=0; i<52; i++){
-			n=rand.nextInt(52);
-			temp=order[i];
-			order[i]=order[n];
-			order[n]=temp;
-		}
-		
-		return order;
-	}
-
-	public void showPoker(){
-		System.out.println(serialNumber);
-	}
+public class PickRed{
+	public static Deck deck=new Deck();
+	public static Table table=new Table();
+	public static Player player[]=new Player[4];
 	
+	public static void main(String args[]){
+		initializePlayers();
+		shuffleAndDeal();
+
+		for(int round=0; round<6; round++){
+			System.out.println("Round = "+(round+1));
+			for(int i=0; i<4; i++) player[i].sort();
+
+			play(round);
+			playAI(round);
+		}
+
+	}
+
+	public static void initializePlayers(){
+		for(int i=0; i<4; i++) player[i]=new Player();
+	}
+
+	public static void shuffleAndDeal(){
+		deck.shuffle();
+		deck.deal(player);
+		deck.deal(table);
+	}
+
+	public static void play(int round){
+		table.showPoker();
+		player[0].showPoker(round);
+
+		table.tablePokers[table.numberOfPokers].serialNumber=player[0].inputAndcheck();
+		table.numberOfPokers++;
+
+		table.tablePokers[table.numberOfPokers].serialNumber=deck.deckPokers[deck.orderOfPokers].serialNumber;
+		table.numberOfPokers++;			
+		deck.orderOfPokers++;
+		
+		System.out.println("\n< After play and draw >");
+		table.showPoker();
+
+		//System.out.println("table pokers : "+table.numberOfPokers);
+
+		System.out.println("\n< After eliminate >");
+		player[0].score+=table.eliminate();
+		table.showPoker();
+		System.out.println("Score = "+player[0].score);
+	}
+
+	public static void playAI(int round){
+		for(int i=1; i<4; i++){
+			table.showPoker();
+			player[i].showPoker(round);
+
+			table.tablePokers[table.numberOfPokers].serialNumber=player[i].selectPoker(table);
+			table.numberOfPokers++;
+
+			table.tablePokers[table.numberOfPokers].serialNumber=deck.deckPokers[deck.orderOfPokers].serialNumber;
+			table.numberOfPokers++;			
+			deck.orderOfPokers++;
+
+			System.out.println("\n< After play and draw >");
+			table.showPoker();
+
+			System.out.println("\n< After eliminate >");
+			player[i].score+=table.eliminate();
+			table.showPoker();
+			System.out.println("Score = "+player[i].score);
+		}
+	}
 }
 
-class Pokers extends Cards{
+class Poker{
+	public int serialNumber;
 	public String suit;
-	public String number;
+	public String rank;
+	public int score;
 
-	Pokers(){}
+	public Poker(){
+		serialNumber=99;
+		suit="NULL";
+		rank="NULL";
+		score=0;
+	}
 
-	Pokers(int ser){
+	public Poker(int ser){
 		serialNumber=ser;
 		suit=setSuit(ser);
-		number=setNumber(ser);
+		rank=setNumber(ser);
+		score=setScore(ser);
 	}
 
 	public static String setSuit(int ord){
-		if(ord/13==0){
-			return "Club";
-		}else if(ord/13==1){
-			return "Diamond";
-		}else if(ord/13==2){
-			return "Heart";
-		}else{
-			return "Spades";
-		}
+		if(ord/13==0) return "Club";
+		else if(ord/13==1) return "Diamond";
+		else if(ord/13==2) return "Heart";
+		else return "Spades";
 	}
 
 	public static String setNumber(int ord){
 		ord+=1;
-		if(ord%13==1){
-			return "A";
-		}else if(ord%13==11){
-			return "J";
-		}else if(ord%13==12){
-			return "Q";
-		}else if(ord%13==0){
-			return "K";
+		if(ord%13==1) return "A";
+		else if(ord%13==11)	return "J";
+		else if(ord%13==12) return "Q";
+		else if(ord%13==0) return "K";
+		else return Integer.toString(ord%13);
+	}
+
+	public static int setScore(int ord){
+		if(ord==39) return 10;
+		if(ord==13 || ord==26) return 20;
+		if(ord/13==1 || ord/13==2){
+			ord+=1;
+			if(ord%13==9 || ord%13==11 || ord%13==12 || ord%13==0) return 10;
+			else return (ord%13);
 		}else{
-			return Integer.toString(ord%13);
-		}
-	}
-
-	public void showPoker(){
-		System.out.println(suit+"\t"+number);
-	}
-
-}
-
-class SortPokers{
-	int numberOfPokers;
-	Pokers pokerToSort[]=new Pokers[14];
-
-	SortPokers(){}
-
-	SortPokers(Table table){
-		numberOfPokers=table.pokercardsOnTable;
-		pokerToSort=table.pokercards;
-	}
-
-	SortPokers(int round,Players player){
-		numberOfPokers=(6-round);
-		pokerToSort=player.pokercards;
-	}
-
-	public void sorting(SortPokers sorting){
-		int tem;
-		String temp;
-
-		for(int i=0; i<sorting.numberOfPokers; i++){
-			for(int j=1; j<sorting.numberOfPokers-i; j++){
-				if(sorting.pokerToSort[j-1].serialNumber>sorting.pokerToSort[j].serialNumber){
-					tem=sorting.pokerToSort[j-1].serialNumber;
-					sorting.pokerToSort[j-1].serialNumber=sorting.pokerToSort[j].serialNumber;
-					sorting.pokerToSort[j].serialNumber=tem;
-
-					temp=sorting.pokerToSort[j-1].suit;
-					sorting.pokerToSort[j-1].suit=sorting.pokerToSort[j].suit;
-					sorting.pokerToSort[j].suit=temp;
-
-					temp=sorting.pokerToSort[j-1].number;
-					sorting.pokerToSort[j-1].number=sorting.pokerToSort[j].number;
-					sorting.pokerToSort[j].number=temp;
-				}
-			}
+			return 0;
 		}
 	}
 }
 
-class Table{
-	int pokercardsOnTable;
-	Pokers pokercards[]=new Pokers[14];
+class Deck{
+	public int orderOfPokers;
+	public Poker deckPokers[]=new Poker[52];
 
-	Table(Pokers pokers[]){
-		pokercardsOnTable=4;
+	public Deck(){
+		orderOfPokers=28;
+		for(int i=0; i<52; i++) deckPokers[i]=new Poker();
+	}
 
+	public void shuffle(){
+		Random rand=new Random(System.currentTimeMillis());
+		int n, temp;
+
+		for(int i=0; i<52; i++) deckPokers[i].serialNumber=i;
+		for(int i=0; i<52; i++){
+			n=rand.nextInt(52);
+			temp=deckPokers[i].serialNumber;
+			deckPokers[i].serialNumber=deckPokers[n].serialNumber;
+			deckPokers[n].serialNumber=temp;
+		}
+	}
+
+	public void deal(Player players[]){
 		int n=0;
-		for(int i=24; i<28; i++){
-			pokercards[n]=pokers[i];
-			n++;
-		}
-	}
 
-	public void showRoundAndScore(int round){
-		System.out.println("Round : "+(round+1));
-		System.out.print("Score : ");
-	}
-
-	public void showPokersOnTable(){
-		System.out.println("The pokers on table :");
-		for(int i=0; i<pokercardsOnTable; i++){
-			System.out.println(pokercards[i].suit+"\t"+pokercards[i].number);
-		}
-		System.out.println();
-	}
-
-	public Pokers canThePokersBeMated(Pokers input){
-
-
-		return input;
-	}
-
-	public Pokers[] canThePokersBeMated(Pokers input[]){
-		
-
-		return input;
-	}
-
-}
-
-class Players{
-	int order;
-	String name;
-	int score;
-	public Pokers pokercards[]=new Pokers[6];
-
-	Players(){}
-
-	Players(int ord, Pokers pokers[]){
-		order=ord;									// 0,1,2,3...
-		name="Player "+Integer.toString(ord+1);
-		score=0;
-
-		int n=0;
 		for(int i=0; i<24; i++){
-			if(i%4==ord){
-				pokercards[n]=pokers[i];
+			if(i%4==0) players[0].handPokers[n].serialNumber=deckPokers[i].serialNumber;
+			else if(i%4==1) players[1].handPokers[n].serialNumber=deckPokers[i].serialNumber;
+			else if(i%4==2) players[2].handPokers[n].serialNumber=deckPokers[i].serialNumber;
+			else if(i%4==3){
+				players[3].handPokers[n].serialNumber=deckPokers[i].serialNumber;
 				n++;
 			}
 		}
 	}
 
-	public void showPlayerAndPokers(){
-		System.out.println("The pokers of "+name+" :");
-		for(int i=0; i<6; i++){
-			System.out.println(pokercards[i].suit+"\t"+pokercards[i].number);
-		}
-	}
+	public void deal(Table table){
+		int n=0;
 
-	public void showPlayerAndScore(){
-		System.out.print(name+" = "+score+"\t");
-	}
-
-	public Pokers inputAndcheck(){
-		Pokers input=new Pokers();
-		Scanner scn=new Scanner(System.in);
-		boolean check=false;
-		while(check==false){
-			System.out.print("Please input the suit :");
-			String su=scn.next();
-			System.out.print("Please input the number :");
-			String num=scn.next();
-			check=checkInput(su,num);
-			if(check==true){
-				input.suit=su;
-				input.number=num;
-			}
+		for(int i=24; i<28; i++){
+			table.tablePokers[n].serialNumber=deckPokers[i].serialNumber;
+			// if(i==24) table.tablePokers[n].serialNumber=3;
+			// if(i==25) table.tablePokers[n].serialNumber=16;
+			// if(i==26) table.tablePokers[n].serialNumber=29;
+			// if(i==27) table.tablePokers[n].serialNumber=42;
+ 			n++;
 		}
-		return input;
-	}
-
-	public boolean checkInput(String suit, String number){
-		for(int i=0; i<6; i++){
-			if(suit.equals(pokercards[i].suit) && number.equals(pokercards[i].number)){
-				return true;
-			}
-		}
-		System.out.println("You don't have this card.");
-		return false;
 	}
 }
+
+class Table{
+	public int numberOfPokers;
+	public Poker tablePokers[]=new Poker[12];
+
+	public Table(){
+		numberOfPokers=4;
+		for(int i=0; i<12; i++) tablePokers[i]=new Poker();
+	}
+	
+	public void showPoker(){
+		sort();
+		count();
+		System.out.println("Table");
+		System.out.println("Number = "+numberOfPokers);
+		for(int i=0 ; i<numberOfPokers+1; i++){
+			if(tablePokers[i].serialNumber==99){
+				System.out.println();
+				return;
+			}
+			tablePokers[i]=new Poker(tablePokers[i].serialNumber);
+			System.out.println(tablePokers[i].serialNumber+"\t"+tablePokers[i].suit+"\t"+tablePokers[i].rank+"\t"+tablePokers[i].score);
+		}
+	}
+
+	public void sort(){
+		int temp;
+
+		for(int i=0; i<numberOfPokers-1; i++){
+			for(int j=i+1; j<numberOfPokers; j++){
+				if(tablePokers[j].serialNumber<tablePokers[i].serialNumber){
+					temp=tablePokers[i].serialNumber;
+					tablePokers[i].serialNumber=tablePokers[j].serialNumber;
+					tablePokers[j].serialNumber=temp;
+				}
+			}
+		}
+	}
+
+	public void count(){
+		for(int i=0; i<13; i++){
+			if(tablePokers[i].serialNumber==99){
+				numberOfPokers=i;
+				return;
+			}
+		}
+	}
+
+	public void sortByNumber(){
+		int temp;
+
+		sort();
+		for(int i=0; i<numberOfPokers-1; i++){
+			for(int j=i+1; j<numberOfPokers; j++){
+				if(tablePokers[j].serialNumber%13<tablePokers[i].serialNumber%13){
+					temp=tablePokers[i].serialNumber;
+					tablePokers[i].serialNumber=tablePokers[j].serialNumber;
+					tablePokers[j].serialNumber=temp;
+				}
+			}
+		}
+		for(int i=numberOfPokers-1; i>0; i--){
+			for(int j=i-1; j>=0; j--){
+				if(tablePokers[j].serialNumber%13==tablePokers[i].serialNumber%13){
+					if(tablePokers[j].score<tablePokers[i].score){
+						temp=tablePokers[i].serialNumber;
+						tablePokers[i].serialNumber=tablePokers[j].serialNumber;
+						tablePokers[j].serialNumber=temp;
+					}
+				}
+			}
+		}
+
+		return;
+	}
+
+	public int eliminate(){
+		int scoreYouGet=0;
+
+		sortByNumber();
+		for(int i=0; i<numberOfPokers-1; i++){
+			for(int j=i+1; j<numberOfPokers; j++){
+				if(tablePokers[i].serialNumber!=99 && tablePokers[j].serialNumber!=99){
+					int a=tablePokers[i].serialNumber%13;
+					int b=tablePokers[j].serialNumber%13;
+
+					if((a==0 && b==8) || (a==8 && b==0) || (a==1 && b==7) || (a==7 && b==1) || (a==2 && b==6) || (a==6 && b==2) || (a==3 && b==5) || (a==5 && b==3)){
+						scoreYouGet+=setScore(tablePokers[i].serialNumber);
+						scoreYouGet+=setScore(tablePokers[j].serialNumber);
+						tablePokers[i].serialNumber=99;
+						tablePokers[j].serialNumber=99;
+						continue;
+					}
+
+					if((a==b) && (a==4 || a==9 || a==10 || a==11 || a==12)){
+						scoreYouGet+=setScore(tablePokers[i].serialNumber);
+						scoreYouGet+=setScore(tablePokers[j].serialNumber);
+						tablePokers[i].serialNumber=99;
+						tablePokers[j].serialNumber=99;
+						continue;
+					}
+				}
+			}
+		}
+
+		return scoreYouGet;
+	}
+
+	public static int setScore(int ord){
+		if(ord==39) return 10;
+		if(ord==13 || ord==26) return 20;
+		if(ord/13==1 || ord/13==2){
+			ord+=1;
+			if(ord%13==9 || ord%13==11 || ord%13==12 || ord%13==0) return 10;
+			else return (ord%13);
+		}else{
+			return 0;
+		}
+	}
+}
+
+class Player{
+	public int numberOfPokers;
+	public Poker handPokers[]=new Poker[6];
+	public int score;
+
+	public Player(){
+		numberOfPokers=6;
+		for(int i=0; i<6; i++) handPokers[i]=new Poker();
+		score=0;
+	}
+
+	public void sort(){
+		int temp;
+
+		for(int i=0; i<numberOfPokers-1; i++){
+			for(int j=i+1; j<numberOfPokers; j++){
+				if(handPokers[j].serialNumber<handPokers[i].serialNumber){
+					temp=handPokers[i].serialNumber;
+					handPokers[i].serialNumber=handPokers[j].serialNumber;
+					handPokers[j].serialNumber=temp;
+				}
+			}
+		}
+	}
+
+	public void showPoker(int round){
+		sort();
+		System.out.println("Player 1");
+		for(int i=0 ; i<(6-round); i++){
+			if(handPokers[i].serialNumber==99){
+				System.out.println();
+				return;
+			}
+			handPokers[i]=new Poker(handPokers[i].serialNumber);
+			System.out.println(handPokers[i].serialNumber+"\t"+handPokers[i].suit+"\t"+handPokers[i].rank);
+		}
+	}
+	
+	public int inputAndcheck(){
+		Scanner scn=new Scanner(System.in);
+		int inputNumber;
+		String inputSuit;
+		String inputRank;
+		boolean check=false;
+
+		while(check==false){
+			/////////////test/////////////
+			System.out.print("Please input the serialNumber: ");
+			inputNumber=scn.nextInt();
+			///////////////////////////
+			// System.out.print("Please input the suit of poker which you want to eliminate:");
+			// inputSuit=scn.next();
+			// System.out.println("Plesae input the rank of poker which you want to eliminate");
+			// inputRank=scn.next();
+
+			////////////test///////////
+			for(int i=0; i<6; i++){
+				if(handPokers[i].serialNumber==inputNumber){
+					handPokers[i].serialNumber=99;
+					return inputNumber;
+				}
+			}
+			///////////////////////////
+			// for(int i=0; i<6; i++){
+			// 	if(handPokers[i].suit==inputSuit && handPokers[i].rank==inputRank){
+			// 		return handPokers[i].serialNumber;
+			// 	} 
+			// }
+		}
+		
+		return 999;
+	}
+
+	public int selectPoker(Table table){
+		int score=0, max=0, maxj=0;
+		for(int i=0; i<table.numberOfPokers; i++){
+			for(int j=0; j<numberOfPokers; j++){
+				int a=table.tablePokers[i].serialNumber%13;
+				int b=handPokers[j].serialNumber%13;
+
+				if((a==0 && b==8) || (a==8 && b==0) || (a==1 && b==7) || (a==7 && b==1) || (a==2 && b==6) || (a==6 && b==2) || (a==3 && b==5) || (a==5 && b==3)){
+					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);
+					if(score>max){
+						max=score;
+						maxj=j;
+					}
+					continue;
+				}
+
+				if((a==b) && (a==4 || a==9 || a==10 || a==11 || a==12)){
+					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);
+					if(score>max){
+						max=score;
+						maxj=j;
+					}
+					continue;
+				}
+			}
+		}
+		return handPokers[maxj].serialNumber;
+	}
+
+	public static int setScore(int ord){
+		if(ord==39) return 10;
+		if(ord==13 || ord==26) return 20;
+		if(ord/13==1 || ord/13==2){
+			ord+=1;
+			if(ord%13==9 || ord%13==11 || ord%13==12 || ord%13==0) return 10;
+			else return (ord%13);
+		}else{
+			return 0;
+		}
+	}
+}
+

@@ -8,17 +8,13 @@ public class PickRed{
 	public static void main(String args[]){
 		initializePlayers();
 		shuffleAndDeal();
-		/////////////
-		deck.showPoker();
-		////////////////
+
 		for(int round=0; round<6; round++){
 			System.out.println("Round = "+(round+1));
 			for(int i=0; i<4; i++) player[i].sort();
-
 			play(round);
 			playAI(round);
 		}
-
 	}
 
 	public static void initializePlayers(){
@@ -32,8 +28,10 @@ public class PickRed{
 	}
 
 	public static void play(int round){
+		if(round!=0) showScores();
+		System.out.println("Table");
 		table.showPoker();
-		player[0].showPoker(round);
+		player[0].showPoker(round,0);
 
 		table.tablePokers[table.numberOfPokers].serialNumber=player[0].inputAndcheck();
 		table.numberOfPokers++;
@@ -42,21 +40,18 @@ public class PickRed{
 		table.numberOfPokers++;			
 		deck.orderOfPokers++;
 		
-		System.out.println("\n< After play and draw >");
+		System.out.println("\nTable < After play and draw >");
 		table.showPoker();
 
-		//System.out.println("table pokers : "+table.numberOfPokers);
-
-		System.out.println("\n< After eliminate >");
+		System.out.println("Table < After eliminate >");
 		player[0].score+=table.eliminate();
 		table.showPoker();
-		System.out.println("Score = "+player[0].score);
+		System.out.println();
 	}
 
 	public static void playAI(int round){
 		for(int i=1; i<4; i++){
-			table.showPoker();
-			player[i].showPoker(round);
+			player[i].showPoker(round,i);
 
 			table.tablePokers[table.numberOfPokers].serialNumber=player[i].selectPoker(table);
 			table.numberOfPokers++;
@@ -65,14 +60,22 @@ public class PickRed{
 			table.numberOfPokers++;			
 			deck.orderOfPokers++;
 
-			System.out.println("\n< After play and draw >");
+			System.out.println("Table < After play and draw >");
 			table.showPoker();
 
-			System.out.println("\n< After eliminate >");
+			System.out.println("Table < After eliminate >");
 			player[i].score+=table.eliminate();
 			table.showPoker();
-			System.out.println("Score = "+player[i].score);
+			System.out.println();
 		}
+	}
+
+	public static void showScores(){
+		System.out.println("Score");
+		for(int i=0; i<4; i++){
+			System.out.println("Player "+(i+1)+"   "+player[i].score);
+		}
+		System.out.println();
 	}
 }
 
@@ -166,18 +169,7 @@ class Deck{
 
 		for(int i=24; i<28; i++){
 			table.tablePokers[n].serialNumber=deckPokers[i].serialNumber;
-			// if(i==24) table.tablePokers[n].serialNumber=3;
-			// if(i==25) table.tablePokers[n].serialNumber=16;
-			// if(i==26) table.tablePokers[n].serialNumber=29;
-			// if(i==27) table.tablePokers[n].serialNumber=42;
- 			n++;
-		}
-	}
-
-	public void showPoker(){
-		for(int i=0; i<52; i++){
-			deckPokers[i]=new Poker(deckPokers[i].serialNumber);
-			System.out.println(deckPokers[i].serialNumber+"\t"+deckPokers[i].suit+"\t"+deckPokers[i].rank+"\t"+deckPokers[i].score);
+			n++;
 		}
 	}
 }
@@ -194,7 +186,6 @@ class Table{
 	public void showPoker(){
 		sort();
 		count();
-		System.out.println("Table");
 		System.out.println("Number = "+numberOfPokers);
 		for(int i=0 ; i<numberOfPokers+1; i++){
 			if(tablePokers[i].serialNumber==99){
@@ -327,9 +318,12 @@ class Player{
 		}
 	}
 
-	public void showPoker(int round){
+	public void showPoker(int round, int order){
+		System.out.println("Player "+(order+1));
 		sort();
-		System.out.println("Player 1");
+		if(order!=0) return;
+
+		System.out.println("Your pokers");
 		for(int i=0 ; i<(6-round); i++){
 			if(handPokers[i].serialNumber==99){
 				System.out.println();
@@ -379,10 +373,13 @@ class Player{
 		int score=0, max=0, maxj=0;
 		int numberToPlay;
 
+		sort();
 		for(int i=0; i<table.numberOfPokers; i++){
 			for(int j=0; j<numberOfPokers; j++){
 				int a=table.tablePokers[i].serialNumber%13;
 				int b=handPokers[j].serialNumber%13;
+
+				if(table.tablePokers[i].serialNumber==99 || handPokers[j].serialNumber==99) break;
 
 				if((a==0 && b==8) || (a==8 && b==0) || (a==1 && b==7) || (a==7 && b==1) || (a==2 && b==6) || (a==6 && b==2) || (a==3 && b==5) || (a==5 && b==3)){
 					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);

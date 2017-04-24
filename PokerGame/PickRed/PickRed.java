@@ -13,8 +13,9 @@ public class PickRed{
 			System.out.println("Round = "+(round+1));
 			for(int i=0; i<4; i++) player[i].sort();
 			play(round);
-			playAI(round);
 		}
+
+		showScores();
 	}
 
 	public static void initializePlayers(){
@@ -28,34 +29,23 @@ public class PickRed{
 	}
 
 	public static void play(int round){
-		if(round!=0) showScores();
-		System.out.println("Table");
-		table.showPoker();
-		player[0].showPoker(round,0);
+		for(int i=0; i<4; i++){
+			if(i==0){
+				if(round!=0) showScores();
+				System.out.println("Table");
+				table.showPoker();
+				player[0].showPoker(round,0);
 
-		table.tablePokers[table.numberOfPokers].serialNumber=player[0].inputAndcheck();
-		table.numberOfPokers++;
+				table.tablePokers[table.numberOfPokers].serialNumber=player[0].inputAndcheck();
+				table.numberOfPokers++;
+				System.out.println();
+			}else{
+				player[i].showPoker(round,i);
 
-		table.tablePokers[table.numberOfPokers].serialNumber=deck.deckPokers[deck.orderOfPokers].serialNumber;
-		table.numberOfPokers++;			
-		deck.orderOfPokers++;
-		
-		System.out.println("\nTable < After play and draw >");
-		table.showPoker();
-
-		System.out.println("Table < After eliminate >");
-		player[0].score+=table.eliminate();
-		table.showPoker();
-		System.out.println();
-	}
-
-	public static void playAI(int round){
-		for(int i=1; i<4; i++){
-			player[i].showPoker(round,i);
-
-			table.tablePokers[table.numberOfPokers].serialNumber=player[i].selectPoker(table);
-			table.numberOfPokers++;
-
+				table.tablePokers[table.numberOfPokers].serialNumber=player[i].selectPoker(table);
+				table.numberOfPokers++;
+			}
+			
 			table.tablePokers[table.numberOfPokers].serialNumber=deck.deckPokers[deck.orderOfPokers].serialNumber;
 			table.numberOfPokers++;			
 			deck.orderOfPokers++;
@@ -258,7 +248,7 @@ class Table{
 					int a=tablePokers[i].serialNumber%13;
 					int b=tablePokers[j].serialNumber%13;
 
-					if((a==0 && b==8) || (a==8 && b==0) || (a==1 && b==7) || (a==7 && b==1) || (a==2 && b==6) || (a==6 && b==2) || (a==3 && b==5) || (a==5 && b==3)){
+					if((a+b)==8){
 						scoreYouGet+=setScore(tablePokers[i].serialNumber);
 						scoreYouGet+=setScore(tablePokers[j].serialNumber);
 						tablePokers[i].serialNumber=99;
@@ -381,7 +371,7 @@ class Player{
 
 				if(table.tablePokers[i].serialNumber==99 || handPokers[j].serialNumber==99) break;
 
-				if((a==0 && b==8) || (a==8 && b==0) || (a==1 && b==7) || (a==7 && b==1) || (a==2 && b==6) || (a==6 && b==2) || (a==3 && b==5) || (a==5 && b==3)){
+				if((a+b)==8){
 					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);
 					if(score>max){
 						max=score;

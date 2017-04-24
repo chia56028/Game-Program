@@ -320,28 +320,28 @@ class Player{
 		boolean check=false;
 
 		while(check==false){
-			/////////////test/////////////
+			System.out.print("Please input the suit of poker which you want to eliminate : ");
+			inputSuit=scn.next();
+			System.out.print("Plesae input the rank of poker which you want to eliminate : ");
+			inputRank=scn.next();
+
+			for(int i=0; i<6; i++){
+				if(handPokers[i].suit.equals(inputSuit) && handPokers[i].rank.equals(inputRank)){
+					return handPokers[i].serialNumber;
+				} 
+			}
+
+
+			/*
 			System.out.print("Please input the serialNumber: ");
 			inputNumber=scn.nextInt();
-			///////////////////////////
-			// System.out.print("Please input the suit of poker which you want to eliminate:");
-			// inputSuit=scn.next();
-			// System.out.println("Plesae input the rank of poker which you want to eliminate");
-			// inputRank=scn.next();
-
-			////////////test///////////
 			for(int i=0; i<6; i++){
 				if(handPokers[i].serialNumber==inputNumber){
 					handPokers[i].serialNumber=99;
 					return inputNumber;
 				}
 			}
-			///////////////////////////
-			// for(int i=0; i<6; i++){
-			// 	if(handPokers[i].suit==inputSuit && handPokers[i].rank==inputRank){
-			// 		return handPokers[i].serialNumber;
-			// 	} 
-			// }
+			*/
 		}
 		
 		return 999;

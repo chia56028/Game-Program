@@ -249,16 +249,16 @@ class Table{
 					int b=tablePokers[j].serialNumber%13;
 
 					if((a+b)==8){
-						scoreYouGet+=setScore(tablePokers[i].serialNumber);
-						scoreYouGet+=setScore(tablePokers[j].serialNumber);
+						scoreYouGet+=tablePokers[i].setScore(tablePokers[i].serialNumber);
+						scoreYouGet+=tablePokers[j].setScore(tablePokers[j].serialNumber);
 						tablePokers[i].serialNumber=99;
 						tablePokers[j].serialNumber=99;
 						continue;
 					}
 
 					if((a==b) && (a==4 || a==9 || a==10 || a==11 || a==12)){
-						scoreYouGet+=setScore(tablePokers[i].serialNumber);
-						scoreYouGet+=setScore(tablePokers[j].serialNumber);
+						scoreYouGet+=tablePokers[i].setScore(tablePokers[i].serialNumber);
+						scoreYouGet+=tablePokers[j].setScore(tablePokers[j].serialNumber);
 						tablePokers[i].serialNumber=99;
 						tablePokers[j].serialNumber=99;
 						continue;
@@ -268,18 +268,6 @@ class Table{
 		}
 
 		return scoreYouGet;
-	}
-
-	public static int setScore(int ord){
-		if(ord==39) return 10;
-		if(ord==13 || ord==26) return 20;
-		if(ord/13==1 || ord/13==2){
-			ord+=1;
-			if(ord%13==9 || ord%13==11 || ord%13==12 || ord%13==0) return 10;
-			else return (ord%13);
-		}else{
-			return 0;
-		}
 	}
 }
 
@@ -372,7 +360,8 @@ class Player{
 				if(table.tablePokers[i].serialNumber==99 || handPokers[j].serialNumber==99) break;
 
 				if((a+b)==8){
-					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);
+					score=table.tablePokers[i].setScore(table.tablePokers[i].serialNumber);
+					score+=table.tablePokers[i].setScore(handPokers[j].serialNumber);
 					if(score>max){
 						max=score;
 						maxj=j;
@@ -381,7 +370,8 @@ class Player{
 				}
 
 				if((a==b) && (a==4 || a==9 || a==10 || a==11 || a==12)){
-					score=setScore(table.tablePokers[i].serialNumber)+setScore(handPokers[j].serialNumber);
+					score=table.tablePokers[i].setScore(table.tablePokers[i].serialNumber);
+					score+=table.tablePokers[i].setScore(handPokers[j].serialNumber);
 					if(score>max){
 						max=score;
 						maxj=j;
@@ -393,18 +383,6 @@ class Player{
 		numberToPlay=handPokers[maxj].serialNumber;
 		handPokers[maxj].serialNumber=99;
 		return numberToPlay;
-	}
-
-	public static int setScore(int ord){
-		if(ord==39) return 10;
-		if(ord==13 || ord==26) return 20;
-		if(ord/13==1 || ord/13==2){
-			ord+=1;
-			if(ord%13==9 || ord%13==11 || ord%13==12 || ord%13==0) return 10;
-			else return (ord%13);
-		}else{
-			return 0;
-		}
 	}
 }
 

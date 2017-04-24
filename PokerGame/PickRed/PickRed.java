@@ -8,7 +8,9 @@ public class PickRed{
 	public static void main(String args[]){
 		initializePlayers();
 		shuffleAndDeal();
-
+		/////////////
+		deck.showPoker();
+		////////////////
 		for(int round=0; round<6; round++){
 			System.out.println("Round = "+(round+1));
 			for(int i=0; i<4; i++) player[i].sort();
@@ -169,6 +171,13 @@ class Deck{
 			// if(i==26) table.tablePokers[n].serialNumber=29;
 			// if(i==27) table.tablePokers[n].serialNumber=42;
  			n++;
+		}
+	}
+
+	public void showPoker(){
+		for(int i=0; i<52; i++){
+			deckPokers[i]=new Poker(deckPokers[i].serialNumber);
+			System.out.println(deckPokers[i].serialNumber+"\t"+deckPokers[i].suit+"\t"+deckPokers[i].rank+"\t"+deckPokers[i].score);
 		}
 	}
 }
@@ -368,6 +377,8 @@ class Player{
 
 	public int selectPoker(Table table){
 		int score=0, max=0, maxj=0;
+		int numberToPlay;
+
 		for(int i=0; i<table.numberOfPokers; i++){
 			for(int j=0; j<numberOfPokers; j++){
 				int a=table.tablePokers[i].serialNumber%13;
@@ -392,7 +403,9 @@ class Player{
 				}
 			}
 		}
-		return handPokers[maxj].serialNumber;
+		numberToPlay=handPokers[maxj].serialNumber;
+		handPokers[maxj].serialNumber=99;
+		return numberToPlay;
 	}
 
 	public static int setScore(int ord){

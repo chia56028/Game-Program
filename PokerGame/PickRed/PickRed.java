@@ -16,6 +16,7 @@ public class PickRed{
 		}
 
 		showScores();
+		showPlace();
 	}
 
 	public static void initializePlayers(){
@@ -66,6 +67,14 @@ public class PickRed{
 			System.out.println("Player "+(i+1)+"   "+player[i].score);
 		}
 		System.out.println();
+	}
+
+	public static void showPlace(){
+		int place=1;
+		for(int i=1; i<4; i++){
+			if(player[i].score>player[0].score) place++;
+		}
+		System.out.println("You got "+place+" place~");
 	}
 }
 
@@ -183,7 +192,7 @@ class Table{
 				return;
 			}
 			tablePokers[i]=new Poker(tablePokers[i].serialNumber);
-			System.out.println(tablePokers[i].serialNumber+"\t"+tablePokers[i].suit+"\t"+tablePokers[i].rank+"\t"+tablePokers[i].score);
+			System.out.println(tablePokers[i].suit+"\t"+tablePokers[i].rank);
 		}
 	}
 
@@ -308,7 +317,7 @@ class Player{
 				return;
 			}
 			handPokers[i]=new Poker(handPokers[i].serialNumber);
-			System.out.println(handPokers[i].serialNumber+"\t"+handPokers[i].suit+"\t"+handPokers[i].rank);
+			System.out.println(handPokers[i].suit+"\t"+handPokers[i].rank);
 		}
 	}
 	
@@ -327,7 +336,9 @@ class Player{
 
 			for(int i=0; i<6; i++){
 				if(handPokers[i].suit.equals(inputSuit) && handPokers[i].rank.equals(inputRank)){
-					return handPokers[i].serialNumber;
+					inputNumber=handPokers[i].serialNumber;
+					handPokers[i].serialNumber=99;
+					return inputNumber;
 				} 
 			}
 

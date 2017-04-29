@@ -12,7 +12,36 @@ class Chessgame implements Chess, Chessboard{
 	public int chessboard[][]=new int[e][e];
 
 	public Chessgame(){
-		chessboard=new int[][]{{1,1,2,2},{3,3,5,4},{5,4,6,6},{7,7,8,8}};
+		establishAnArray();
+	}
+
+	void establishAnArray(){
+		int arr[]=new int[e*e];
+		for(int i=0; i<e*e; i++){
+			arr[i]=i%(e*e/2)+1;
+		}
+		do{
+			Random rand=new Random(System.currentTimeMillis());
+			int m, n;
+			for(int i=0; i<e*e; i++){
+				m=rand.nextInt(e*e);
+				n=arr[i];
+				arr[i]=arr[m];
+				arr[m]=n;
+			}
+			int k=0;
+			for(int i=0; i<e; i++){
+				for(int j=0; j<e; j++){
+					chessboard[j][i]=arr[k];
+					k+=1;
+				}
+			}
+		}while(theGameEndAtFirstPrint());
+	}
+
+	boolean theGameEndAtFirstPrint(){
+		if(canGameGoOn()==1) return false;
+		else return true;
 	}
 
 	public void printArray(){

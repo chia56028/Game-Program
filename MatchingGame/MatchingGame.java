@@ -10,6 +10,7 @@ interface Chessboard{
 
 class Chessgame implements Chess, Chessboard{
 	public int chessboard[][]=new int[e][e];
+	public int checkboard[][]=new int[e][e];
 
 	public Chessgame(){
 		establishAnArray();
@@ -33,15 +34,16 @@ class Chessgame implements Chess, Chessboard{
 			for(int i=0; i<e; i++){
 				for(int j=0; j<e; j++){
 					chessboard[j][i]=arr[k];
+					checkboard[j][i]=arr[k];
 					k+=1;
 				}
 			}
-		}while(theGameEndAtFirstPrint());
-	}
-
-	boolean theGameEndAtFirstPrint(){
-		if(canGameGoOn()==1) return false;
-		else return true;
+		}while(autoGame()!=2);
+		for(int i=0; i<e; i++){
+			for(int j=0; j<e; j++){
+				chessboard[j][i]=checkboard[j][i];
+			}
+		}
 	}
 
 	public void printArray(){
@@ -136,6 +138,85 @@ class Chessgame implements Chess, Chessboard{
 			}else{
 				endgame[l]=1;
 				wingame[l]=1;
+			}
+		}
+
+		int game=2;
+		for(int l=1; l<=e*e/2; l++)
+		  	if(wingame[l]!=1) game=0;
+
+		if(game==2) return 2;
+		else game=0;
+
+		if(game==0){
+			for(int l=1; l<=e*e/2; l++)
+			  	if(endgame[l]!=1) return 1;
+		}
+
+		return 0;
+	}
+
+	public int autoGame(){
+		int A1[]=new int[e*e];
+		int A2[]=new int[e*e];
+		int B1[]=new int[e*e];
+		int B2[]=new int[e*e];
+		int endgame[]=new int[e*e];
+		int wingame[]=new int[e*e];
+		int r1, r2, c1, c2;
+		int k;
+
+		for(int i=0; i<e*e; i++){
+			A1[i]=99;
+			A2[i]=99;
+			B1[i]=99;
+			B2[i]=99;
+			endgame[i]=0;
+			wingame[i]=0;
+		}
+		for(int i=0; i<e; i++){
+		  	for(int j=0; j<e; j++){
+			    k=chessboard[j][i];
+			    if(A1[k]==99){
+	          		B1[k]=j;
+	          		A1[k]=i;
+	    		}else{
+		        	B2[k]=j;
+		        	A2[k]=i;
+		        }
+		  	}
+		}
+		for(int round=0; round<8; round++){
+			for(int l=1; l<=e*e/2; l++){
+				r1=A1[l];
+				r2=A2[l];
+				c1=B1[l];
+				c2=B2[l];
+
+				if(r1!=99 && r2!=99 && c1!=99 && c2!=99){
+					if(checkLine(r1,r2,c1,c2)){
+						k=chessboard[c1][r1];
+						A1[k]=99;
+						B1[k]=99;
+						A2[k]=99;
+						B2[k]=99;
+						chessboard[c1][r1]=99;
+						chessboard[c2][r2]=99;
+					}else if(checkCorner(r1,r2,c1,c2)){
+						k=chessboard[c1][r1];
+					 	A1[k]=99;
+					 	B1[k]=99;
+						A2[k]=99;
+						B2[k]=99;
+						chessboard[c1][r1]=99;
+						chessboard[c2][r2]=99;
+					}else{
+						endgame[l]=1;
+					}
+				}else{
+					endgame[l]=1;
+					wingame[l]=1;
+				}
 			}
 		}
 
